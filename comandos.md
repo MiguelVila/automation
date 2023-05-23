@@ -41,9 +41,9 @@ EOF
 
 ## Install kubernetes
 cat <<EOF >> /etc/hosts
-10.0.1.54 kube-manager.ose.pe kube-manager
-10.0.1.213 kube-nodo1.ose.pe kube-nodo1
-10.0.1.236 kube-nodo2.ose.pe kube-nodo2
+10.0.1.54 nodo-master.cluster.local nodo-master
+10.0.1.213 nodo-dev.cluster.local nodo-dev
+10.0.1.236 nodo-qa.cluster.local nodo-qa
 EOF
 
 cat <<EOF >>/etc/modules-load.d/containerd.conf
@@ -88,5 +88,6 @@ apt-mark hold kubelet kubeadm kubectl
 
 
 kubeadm init --cri-socket=/run/containerd/containerd.sock --kubernetes-version 1.24.1 
+echo 'source <(kubectl completion bash)' >>~/.bashrc
 
 kubeadm token create --print-join-command 

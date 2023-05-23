@@ -36,3 +36,28 @@ pipeline {
         }
     }
 }
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Ejecutar playbook de Ansible') {
+            steps {
+                withCredentials([file(credentialsId: 'ID_DEL_SECRETO', variable: 'CRED_FILE')]) {
+                    script {
+                        def kubeconfigPath = sh(script: 'echo $CRED_FILE', returnStdout: true).trim()
+
+                        ansiblePlaybook(
+                            playbook: 'path/to/playbook.yml',
+                            inventory: 'localhost',
+                            extraVars: [
+                                kubernetes_context: params.KUBERNETES_CONTEXT
+                            ],
+                            credentialsId: kubeconfigPath
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

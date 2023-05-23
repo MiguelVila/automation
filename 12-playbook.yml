@@ -12,3 +12,10 @@
     - name: Mostrar información de los nodos
       debug:
         var: nodos.resources
+  tasks:
+  - name: Create namespace in default Kubernetes cluster
+    kubernetes.core.k8s:
+      name: "ansible-ns"
+      api_version: v1
+      kind: Namespace
+      state: present
