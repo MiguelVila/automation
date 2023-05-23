@@ -3,5 +3,4 @@ region: us-east-1
   #aws_access_key: YOUR_ACCESS_KEY
   #aws_secret_key: YOUR_SECRET_KEY
 target_ip: 
-  - 10.0.1.176
-  - 10.0.1.233
+  - 10.0.1.72

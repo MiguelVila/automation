@@ -40,15 +40,21 @@ aws_secret_access_key = z+YyoXHJZwPpcS6wrPj4+/BKIoAx0It43F+AIjmx
 EOF
 
 ## Install kubernetes
+
+hostnamectl set-hostname nodo-master.cluster.local
+hostnamectl set-hostname nodo-dev.cluster.local
+hostnamectl set-hostname nodo-qa.cluster.local
+
 cat <<EOF >> /etc/hosts
-10.0.1.54 nodo-master.cluster.local nodo-master
-10.0.1.213 nodo-dev.cluster.local nodo-dev
-10.0.1.236 nodo-qa.cluster.local nodo-qa
+10.0.1.24 nodo-master.cluster.local nodo-master
+10.0.1.72 nodo-dev.cluster.local nodo-dev
+10.0.1.42 nodo-qa.cluster.local nodo-qa
 EOF
 
 cat <<EOF >>/etc/modules-load.d/containerd.conf
 overlay br_netfilter
 EOF
+
 modprobe overlay sudo modprobe br_netfilter
 
 cat <<EOF >>/etc/sysctl.d/99-kubernetes-cri.conf
@@ -57,7 +63,18 @@ net.ipv4.ip_forward = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 
-sysctl --system 
+
+cat <<EOF > disable-svc.sh
+systemctl stop firewalld.service
+systemctl disable firewalld.service
+setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+swapoff -a
+EOF
+
+sh disable-svc.sh
 
 apt-get update && sudo apt-get install -y containerd 
 
@@ -68,7 +85,7 @@ containerd config default | sudo tee /etc/containerd/config.toml
 sed -i s/'SystemdCgroup = false'/'SystemdCgroup = true'/g /etc/containerd/config.toml
 
 systemctl restart containerd 
-systemctl status containerd 
+#systemctl status containerd 
 
 apt-get update && sudo apt-get install -y apt-transport-https curl
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add - 
@@ -78,16 +95,17 @@ deb https://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 
 apt-get update 
+modprobe br_netfilter
 
 apt-get install -y kubelet=1.24.1-00 kubeadm=1.24.1-00 kubectl=1.24.1-00
 
 apt-mark hold kubelet kubeadm kubectl 
 
-
-
-
-
 kubeadm init --cri-socket=/run/containerd/containerd.sock --kubernetes-version 1.24.1 
-echo 'source <(kubectl completion bash)' >>~/.bashrc
 
 kubeadm token create --print-join-command 
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/configsudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml
