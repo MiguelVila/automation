@@ -9,7 +9,7 @@
   tasks:
     - name: Configurar credenciales de AWS
       set_fact:
-        aws_profile: my_profile
+        aws_profile: default
         aws_credentials_file: .aws/credentials
     - name: Get EC2 Instance ID
       ec2_instance_info:
