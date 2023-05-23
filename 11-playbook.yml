@@ -1,0 +1,30 @@
+---
+- name: Drain and Uncordon Nodes
+  hosts: localhost
+  gather_facts: false
+
+  vars_files:
+    - vars_node.yml
+
+  tasks:
+    - name: Drain Nodes
+      kubernetes.core.kubectl:
+        context: "{{ kubernetes_context }}"
+        name: "{{ item }}"
+        drain_type: cordon
+        force: true
+      loop: "{{ nodes }}"
+      register: drain_result
+      changed_when: false
+
+    - name: Wait for Nodes to Drain
+      kubernetes.core.kubectl:
+        context: "{{ kubernetes_context }}"
+        wait: yes
+        wait_timeout: 300
+        wait_condition: "PodsEvicted"
+        wait_condition_timeout: 60
+        pod_label_selectors: "node-name={{ item.item }}"
+      loop: "{{ drain_result.results }}"
+      when: item is changed
+

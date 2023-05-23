@@ -1,0 +1,12 @@
+FROM jenkins/jenkins:lts-alpine
+USER root
+
+# Instalación de dependencias necesarias
+RUN apk add --no-cache python3 py3-pip
+
+# Instalación de Ansible y sus dependencias
+RUN pip3 install --no-cache-dir ansible && \
+    ansible-galaxy collection install community.aws && \
+    pip3 install --no-cache-dir botocore boto3
+
+USER jenkins

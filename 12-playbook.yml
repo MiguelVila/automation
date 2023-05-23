@@ -1,0 +1,14 @@
+---
+- name: Obtener información de los nodos del clúster
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Obtener nodos del clúster
+      kubernetes_facts:
+        kind: Node
+      register: nodos
+
+    - name: Mostrar información de los nodos
+      debug:
+        var: nodos.resources
