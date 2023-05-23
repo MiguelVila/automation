@@ -1,0 +1,32 @@
+---
+- name: Stop EC2 Instance
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - vars.yml
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: Get EC2 Instance ID
+      ec2_instance_info:
+        region: "{{ region }}"
+        filters:
+          private-ip-address: "{{ target_ip }}"
+      register: instance_info
+    - name: Debug EC2 Instance Result
+      debug:
+        var: instance_info
+    - name: Loop over instance results
+      debug:
+        var: item.private_ip_address
+      loop: "{{ instance_info.instances }}"
+    - name: Loop over instance results for id
+      debug:
+        var: item.instance_id
+      loop: "{{ instance_info.instances }}"
+    - name: Stop EC2 Instance
+      ec2_instance:
+        region: "{{ region }}"
+        instance_ids: "{{ item.instance_id }}"
+        state: running
+      loop: "{{ instance_info.instances }}"
