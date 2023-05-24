@@ -42,13 +42,13 @@ EOF
 ## Install kubernetes
 
 hostnamectl set-hostname nodo-master.cluster.local
-hostnamectl set-hostname nodo-dev.cluster.local
-hostnamectl set-hostname nodo-qa.cluster.local
+hostnamectl set-hostname nodo-1.cluster.local
+hostnamectl set-hostname nodo-2.cluster.local
 
 cat <<EOF >> /etc/hosts
-10.0.1.24 nodo-master.cluster.local nodo-master
-10.0.1.72 nodo-dev.cluster.local nodo-dev
-10.0.1.42 nodo-qa.cluster.local nodo-qa
+10.0.1.90 nodo-master.cluster.local nodo-master
+10.0.1.162 nodo-1.cluster.local nodo-1
+10.0.1.9 nodo-2.cluster.local nodo-2
 EOF
 
 cat <<EOF >>/etc/modules-load.d/containerd.conf
@@ -63,6 +63,7 @@ net.ipv4.ip_forward = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 
+sysctl --system
 
 cat <<EOF > disable-svc.sh
 systemctl stop firewalld.service
@@ -110,10 +111,10 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml
-
+kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
 
 cat <<EOF >>.aws/credentials
 [default]
-aws_access_key_id = AKIAWLHLQVRVPNWV3LYU
-aws_secret_access_key = 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
+aws_access_key_id = AKIAU5CNFJJ7SJSX47CJ
+aws_secret_access_key = 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
 EOF
