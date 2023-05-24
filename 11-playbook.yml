@@ -27,4 +27,3 @@
         pod_label_selectors: "node-name={{ item.item }}"
       loop: "{{ drain_result.results }}"
       when: item is changed
-

@@ -106,6 +106,14 @@ kubeadm init --cri-socket=/run/containerd/containerd.sock --kubernetes-version 1
 kubeadm token create --print-join-command 
 
 mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/configsudo chown $(id -u):$(id -g) $HOME/.kube/config
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/calico.yaml
+
+
+cat <<EOF >>.aws/credentials
+[default]
+aws_access_key_id = AKIAWLHLQVRVPNWV3LYU
+aws_secret_access_key = 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
+EOF

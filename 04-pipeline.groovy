@@ -21,7 +21,6 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     def kubeconfigPath = sh(script: 'echo $CRED_FILE', returnStdout: true).trim()
-
                     script {
                         if (params.ENV_TARGET == 'dev') 
                         {

@@ -82,27 +82,14 @@ pipeline {
                 }  
             }
         }
-        stage('Crear archivo .aws/credentials') {
-            steps {
-                script {
-                    def credentialsContent = '''
-[default]
-aws_access_key_id = AKIAWLHLQVRVPNWV3LYU
-aws_secret_access_key = 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
-                    '''
-                    writeFile file: '.aws/credentials', text: credentialsContent
-                    
-                }
-            }
-        }
-        stage('Apagado de ambiente') {
+        stage('Drenar nodos') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
                         if (params.ENV_TARGET == 'dev') 
                         {
-                            def fileContents = readFile('nodos-dev.txt') // Leer el contenido del archivo
-                            def nodes = fileContents.readLines() // Obtener una lista de nodos a partir de las líneas del archivo
+                            def fileContents = readFile('nodos-dev.txt')
+                            def nodes = fileContents.readLines()
                             sh "echo variables listas"
                             
                             for (node in nodes) {
@@ -111,6 +98,23 @@ aws_secret_access_key = 55h1ytT2yqkgKdpmsSmYIXpZY1V+eHeWDjx68/uo
                             }
                             def AWS_SHARED_CREDENTIALS_FILE = ".aws/credentials"
                             sh "cat .aws/credentials"
+                            sh "echo Ejecutando playbook de apago de instancia dev"
+                            sh "ansible-playbook -i localhost 04-playbook.yml"
+                        } else if (params.ENV_TARGET == 'qa') 
+                        {
+                            sh "echo Ejecutando playbook de apago de instancia qa"
+                            sh "ansible-playbook -i localhost 04-playbook.yml"
+                        }
+                    }
+                }
+            }
+        }
+        stage('Ejecutar playbook de Ansible') {
+            steps {
+                withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                    script {
+                        if (params.ENV_TARGET == 'dev') 
+                        {
                             sh "echo Ejecutando playbook de apago de instancia dev"
                             sh "ansible-playbook -i localhost 04-playbook.yml"
                         } else if (params.ENV_TARGET == 'qa') 
