@@ -1,2 +1,2 @@
-nodo-dev.cluster.local
-nodo-qa.cluster.local
+nodo-1.cluster.local
+nodo-2.cluster.local
