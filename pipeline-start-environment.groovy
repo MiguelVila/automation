@@ -19,7 +19,20 @@ pipeline {
                 }  
             }
         }
-        stage('Drain Nodes') {
+        stage('Start Environment'){
+            steps {
+                script {
+                    if (params.ENV_TARGET == 'dev') 
+                    {
+                        sh "ansible-playbook -i localhost playbook-start-environment.yml"
+                    } else if (params.ENV_TARGET == 'qa') 
+                    {
+                        sh "ansible-playbook -i localhost playbook-start-environment.yml"
+                    }
+                }
+            }
+        }
+        stage('Uncordon Nodes') {
             steps {
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
                     script {
@@ -39,19 +52,6 @@ pipeline {
                                 sh "kubectl uncordon ${node}"
                             }
                         }
-                    }
-                }
-            }
-        }
-        stage('shutdown Environment'){
-            steps {
-                script {
-                    if (params.ENV_TARGET == 'dev') 
-                    {
-                        sh "ansible-playbook -i localhost playbook-start-environment.yml"
-                    } else if (params.ENV_TARGET == 'qa') 
-                    {
-                        sh "ansible-playbook -i localhost playbook-start-environment.yml"
                     }
                 }
             }
